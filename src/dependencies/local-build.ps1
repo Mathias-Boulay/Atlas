@@ -166,34 +166,6 @@ while ($true) { Get-Content -Wait -LiteralPath $a -EA 0 | Write-Output; Start-Sl
 		}
 	}
 
-	$oemYmlPath = Separator "Configuration\tweaks\misc\config-oem-information.yml"
-	$tempOemYmlPath = Separator "$playbookTemp\$oemYmlPath"
-	if (Test-Path $oemYmlPath -PathType Leaf) {
-		$confXml = ([xml](Get-Content "playbook.conf" -Raw -EA 0)).Playbook
-		if ($confXml.Version -match '^(0|[1-9]\d*)(\.(0|[1-9]\d*)){0,2}$') {
-			$version = "v$($confXml.Version)"
-
-			if ($confXml.Title | Select-String '(dev)' -Quiet) {
-				$version = $version + ' (dev)'
-			}
-
-			$oemToReplace = 'AtlasVersionUndefined'
-			$oemYml = Get-Content -Path $oemYmlPath -Raw
-			$tempOemYml = $oemYml -replace $oemToReplace, $version
-			
-			if ($tempOemYml -eq $oemYml) {
-				Write-Error "Couldn't find OEM string '$oemToReplace'."
-			} else {
-				New-Item (Split-Path $tempOemYmlPath) -ItemType Directory -Force | Out-Null
-				Set-Content -Path $tempOemYmlPath -Value $tempOemYml
-			}
-		} else {
-			Write-Error "Invalid version format in 'playbook.conf', not setting OEM version."
-		}
-	} else {
-		Write-Error "Can't find '$oemYmlPath', not setting OEM version."
-	}
-
 	# exclude files
 	$excludeFiles = @(
 		"local-build.*",
